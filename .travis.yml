@@ -14,10 +14,22 @@ before_install:
   - find arduino-1.6.13/ -name platform.local.txt -delete
 
 script:
+  - mkdir release
   - VARIANTS=$(ls Firmware/variants/)
+  - touch Firmware/Configuration_prusa.h
   - for VARIANT in $VARIANTS; do
       rm Firmware/Configuration_prusa.h ;
       cp Firmware/variants/${VARIANT} Firmware/Configuration_prusa.h ;
       arduino-1.6.13/arduino --pref build.path=. --verify --verbose-build --board marlin:avr:rambo $PWD/Firmware/Firmware.ino ;
-      cp Firmware.ino.hex "${VARIANT}"ex ;
+      mv Firmware.ino.hex release/"${VARIANT}"ex ;
     done
+
+deploy:
+  provider: releases
+  api_key:
+      - secure: "xuUDo+poUeU/+KR9kzUqRpV6kHSi+Xx12aPFBnx3o2Iv2jFLW6mU+l6JoSxVANeFLqija/fqIEfcJCOdEvkP6gozfUpAJ6ExiC7qCi5nDSzGHUmh1DVJodMA0dPFAyGD4qrKJoUXyE4ZB+zRdqcMo6n0BM+fa2pi1UN/sryqC8CnvgRfsWuZoCd5WrcaECpN0pqDy/kUPNYb7RvGDfDrsLfmBInuq2KQpCkjGdAn9/zfydgw0MxFiApiLdc6PXxPeKsDdLVlY/JXU7I0+xxXTPSZP6a4dQ9XBnHEGou7PeVZOuh463pSA55VUojLvGtkJjA2QI9+m8XxmeyuPu/Zx4/5EJZDRO7TLZiYKUgJoyatdBlIhXOllGdj+qDJ0JmwJMz73r27/9CWWf2/dRoCcWlzQ3ijcfQgUvsOdUlftrRA/0ibQvOMbGconKJV/20rslDJfy/CN7jQp7GUYSeK4Gs6PQW7RSjF/2iK8TJrs+KO0q89l6VEs6HYepTq1Jcn0TbRruvADyx7n6xdezainIL45Y2gSHprmkY6sjPikGKb1EU3Xe5zoNSkznHbMp2/PBT9owseMsNXkr5mI15j7F3BUjuZNIp129dCyS2M8pjp2iTaC3jAh7n0zm99M8SOsQx+Vy81vKam5aJnCUnDYaNzBFAd9+tK7uihEiVe/VE="
+  skip_cleanup: true
+  file_glob: true
+  file: release/*
+  on:
+      branch: MK2
