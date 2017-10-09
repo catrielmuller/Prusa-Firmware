@@ -20,8 +20,9 @@ script:
   - for VARIANT in $VARIANTS; do
       rm Firmware/Configuration_prusa.h ;
       cp Firmware/variants/${VARIANT} Firmware/Configuration_prusa.h ;
+      Scripts/haribo_config.sh ;
       arduino-1.6.13/arduino --pref build.path=. --verify --verbose-build --board marlin:avr:rambo $PWD/Firmware/Firmware.ino ;
-      mv Firmware.ino.hex release/"${VARIANT}"ex ;
+      mv Firmware.ino.hex release/Haribo_3030_Edition-"${VARIANT}"ex ;
     done
 
 deploy:
