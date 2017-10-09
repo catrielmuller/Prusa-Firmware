@@ -1,0 +1,23 @@
+language: c
+
+before_install:
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
+  - sleep 3
+  - export DISPLAY=:1.0
+  - wget http://downloads.arduino.cc/arduino-1.6.13-linux64.tar.xz
+  - tar xf arduino-1.6.13-linux64.tar.xz
+  - rm -rf arduino-1.6.13/libraries/LiquidCrystal
+  - cp -Rf ArduinoAddons/Arduino_1.6.x/* arduino-1.6.13/
+  - wget -c "https://raw.githubusercontent.com/arduino/Arduino/master/hardware/arduino/avr/bootloaders/stk500v2/stk500boot_v2_mega2560.hex"
+  - cp stk500boot_v2_mega2560.hex arduino-1.6.13/hardware/arduino/avr/bootloaders/stk500v2/
+  - cp stk500boot_v2_mega2560.hex arduino-1.6.13/hardware/marlin/avr/bootloaders/
+  - find arduino-1.6.13/ -name platform.local.txt -delete
+
+script:
+  - VARIANTS=$(ls Firmware/variants/)
+  - for VARIANT in $VARIANTS; do
+      rm Firmware/Configuration_prusa.h
+      cp Firmware/variants/${VARIANT} Firmware/Configuration_prusa.h
+      arduino-1.6.13/arduino --pref build.path=. --verify --verbose-build --board marlin:avr:rambo $PWD/Firmware/Firmware.ino ;
+      cp Firmware.ino.hex "${VARIANT}"ex ;
+    done
